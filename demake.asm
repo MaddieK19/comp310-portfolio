@@ -90,7 +90,7 @@ LoadBackgroundLoop:
   CPX #$00              ; Compare X to hex $80, decimal 128 - copying 128 bytes
   BNE LoadBackgroundLoop  ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
                         ; if compare was equal to 128, keep going down
-						
+; Loads second section of bg						
 LoadBackgroundLoop2:
   LDA nametable2, x     ; load data from address (background + the value in x)
   STA $2007             ; write to PPU
@@ -279,7 +279,7 @@ nametable:
   .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$55,$56,$24,$24  ;;brick bottoms 
 
     
-nametable2:
+nametable2:  ; TODO not great way to do it??? make more effcient or somethiing???
   .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24  ;;row 1
   .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24  ;;all sky
 
@@ -312,10 +312,6 @@ attribute:
   .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00100000
   .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00100000
   .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00100000
-  
-  ;.db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00110000
-  
-
 
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
