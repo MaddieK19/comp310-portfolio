@@ -90,6 +90,14 @@ LoadBackgroundLoop:
   CPX #$00              ; Compare X to hex $80, decimal 128 - copying 128 bytes
   BNE LoadBackgroundLoop  ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
                         ; if compare was equal to 128, keep going down
+						
+LoadBackgroundLoop2:
+  LDA nametable2, x     ; load data from address (background + the value in x)
+  STA $2007             ; write to PPU
+  INX                   ; X = X + 1
+  CPX #$00              ; Compare X to hex $80, decimal 128 - copying 128 bytes
+  BNE LoadBackgroundLoop2  ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
+                        ; if compare was equal to 128, keep going down
               
               
 LoadAttribute:
@@ -103,7 +111,7 @@ LoadAttributeLoop:
   LDA attribute, x      ; load data from address (attribute + the value in x)
   STA $2007             ; write to PPU
   INX                   ; X = X + 1
-  CPX #$08              ; Compare X to hex $08, decimal 8 - copying 8 bytes
+  CPX #$00              ; Compare X to hex $08, decimal 8 - copying 8 bytes  ; WAS 08
   BNE LoadAttributeLoop  ; Branch to LoadAttributeLoop if compare was Not Equal to zero
                         ; if compare was equal to 128, keep going down  
 
@@ -269,6 +277,20 @@ nametable:
 
   .db $24,$24,$24,$24,$47,$47,$24,$24,$47,$47,$47,$47,$47,$47,$24,$24  ;;row 4
   .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$55,$56,$24,$24  ;;brick bottoms 
+
+    
+nametable2:
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24  ;;row 1
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24  ;;all sky
+
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$36,$37,$24,$24,$24,$24,$24  ;;row 2
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24  ;;all sky
+
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$35,$25,$25,$37,$24,$24,$24,$24  ;;row 3
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$53,$54,$24,$24  ;;some brick tops
+
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$39,$3a,$3b,$3c,$24,$24,$24,$24  ;;row 4
+  .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$55,$56,$24,$24  ;;brick bottoms
   
   .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24  ;;row 1
   .db $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24  ;;all sky
@@ -287,7 +309,9 @@ nametable:
 
 attribute:
   .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00110000
-
+  .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00100000
+  .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00100000
+  .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00100000
   
   ;.db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00110000
   
