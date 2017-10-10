@@ -94,6 +94,12 @@ NMI:
   LDA #$02
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
 
+  ; Varaibles?
+SpriteYPos = $0200
+SpriteXPos = $0203 
+
+ControllerPort = $4016 
+  
 
 LatchController:
   LDA #$01
@@ -101,21 +107,21 @@ LatchController:
   LDA #$00
   STA $4016       ; tell both the controllers to latch buttons
 
-  LDA $4016  ;A
-  LDA $4016  ;B
-  LDA $4016  ;Select
-  LDA $4016  ;Start
+  LDA ControllerPort  ;A
+  LDA ControllerPort   ;B
+  LDA ControllerPort ;Select
+  LDA ControllerPort   ;Start
   
 ReadUp: 
-  LDA $4016     
+  LDA ControllerPort 
   AND #%00000001 
   BEQ ReadUpDone
  
 LoopA:
-  LDA $0200, x       ; load sprite X position
+  LDA SpriteYPos , x       ; load sprite X position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
-  STA $0200, x       ; save sprite X position
+  STA SpriteYPos , x       ; save sprite X position
   INX
   INX
   INX
@@ -125,15 +131,15 @@ LoopA:
 ReadUpDone: 
   
 ReadDown: 
-  LDA $4016     
+  LDA ControllerPort 
   AND #%00000001 
   BEQ ReadDownDone
  
 LoopB:
-  LDA $0200, x       ; load sprite X position
+  LDA SpriteYPos , x       ; load sprite X position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
-  STA $0200, x       ; save sprite X position
+  STA SpriteYPos , x       ; save sprite X position
   INX
   INX
   INX
@@ -143,15 +149,15 @@ LoopB:
 ReadDownDone: 
   
 ReadLeft: 
-  LDA $4016       ; player 1 - B
+  LDA ControllerPort ; player 1 - B
   AND #%00000001  ; only look at bit 0
   BEQ ReadLeftDone   ; branch to ReadBDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
 LoopC:
-  LDA $0203, x       ; load sprite X position
+  LDA SpriteXPos, x       ; load sprite X position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
-  STA $0203, x       ; save sprite X position
+  STA SpriteXPos, x       ; save sprite X position
   INX
   INX
   INX
@@ -161,16 +167,16 @@ LoopC:
 ReadLeftDone:        ; handling this button is done
 
 ReadRight: 
-  LDA $4016       ; player 1 - A
+  LDA ControllerPort ; player 1 - A
   AND #%00000001  ; only look at bit 0
   BEQ ReadRightDone   ; branch to ReadADone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
  
 LoopD:
-  LDA $0203, x       ; load sprite X position
+  LDA SpriteXPos , x       ; load sprite X position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
-  STA $0203, x       ; save sprite X position
+  STA SpriteXPos, x       ; save sprite X position
   INX
   INX
   INX
