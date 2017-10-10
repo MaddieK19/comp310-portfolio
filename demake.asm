@@ -101,29 +101,84 @@ LatchController:
   LDA #$00
   STA $4016       ; tell both the controllers to latch buttons
 
-
-ReadA: 
-  LDA $4016       ; player 1 - A
-  AND #%00000001  ; only look at bit 0
-  BEQ ReadADone   ; branch to ReadADone if button is NOT pressed (0)
-                  ; add instructions here to do something when button IS pressed (1)
-  LDA $0203       ; load sprite X position
-  CLC             ; make sure the carry flag is clear
-  ADC #$01        ; A = A + 1
-  STA $0203       ; save sprite X position
-ReadADone:        ; handling this button is done
+  LDA $4016  ;A
+  LDA $4016  ;B
+  LDA $4016  ;Select
+  LDA $4016  ;Start
   
-
-ReadB: 
-  LDA $4016       ; player 1 - B
-  AND #%00000001  ; only look at bit 0
-  BEQ ReadBDone   ; branch to ReadBDone if button is NOT pressed (0)
-                  ; add instructions here to do something when button IS pressed (1)
-  LDA $0203       ; load sprite X position
+ReadUp: 
+  LDA $4016     
+  AND #%00000001 
+  BEQ ReadUpDone
+ 
+LoopA:
+  LDA $0200, x       ; load sprite X position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
-  STA $0203       ; save sprite X position
-ReadBDone:        ; handling this button is done
+  STA $0200, x       ; save sprite X position
+  INX
+  INX
+  INX
+  INX
+  CPX $10
+  BNE LoopA
+ReadUpDone: 
+  
+ReadDown: 
+  LDA $4016     
+  AND #%00000001 
+  BEQ ReadDownDone
+ 
+LoopB:
+  LDA $0200, x       ; load sprite X position
+  CLC             ; make sure carry flag is set
+  ADC #$01        ; A = A - 1
+  STA $0200, x       ; save sprite X position
+  INX
+  INX
+  INX
+  INX
+  CPX $10
+  BNE LoopB
+ReadDownDone: 
+  
+ReadLeft: 
+  LDA $4016       ; player 1 - B
+  AND #%00000001  ; only look at bit 0
+  BEQ ReadLeftDone   ; branch to ReadBDone if button is NOT pressed (0)
+                  ; add instructions here to do something when button IS pressed (1)
+LoopC:
+  LDA $0203, x       ; load sprite X position
+  SEC             ; make sure carry flag is set
+  SBC #$01        ; A = A - 1
+  STA $0203, x       ; save sprite X position
+  INX
+  INX
+  INX
+  INX
+  CPX $10
+  BNE LoopC
+ReadLeftDone:        ; handling this button is done
+
+ReadRight: 
+  LDA $4016       ; player 1 - A
+  AND #%00000001  ; only look at bit 0
+  BEQ ReadRightDone   ; branch to ReadADone if button is NOT pressed (0)
+                  ; add instructions here to do something when button IS pressed (1)
+ 
+LoopD:
+  LDA $0203, x       ; load sprite X position
+  CLC             ; make sure carry flag is set
+  ADC #$01        ; A = A - 1
+  STA $0203, x       ; save sprite X position
+  INX
+  INX
+  INX
+  INX
+  CPX $10
+  BNE LoopD
+ReadRightDone:        ; handling this button is done
+
 
 
   
