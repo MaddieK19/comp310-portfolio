@@ -86,8 +86,6 @@ LoadSpritesLoop:
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
   
- 
-
 NMI:
   LDA #$00
   STA $2003       ; set the low byte (00) of the RAM address
@@ -110,18 +108,18 @@ LatchController:
   LDA ControllerPort  ;A
   LDA ControllerPort   ;B
   LDA ControllerPort ;Select
-  LDA ControllerPort   ;Start
+  LDA ControllerPort   ;Start  ;TODO change to loop
   
 ReadUp: 
-  LDA ControllerPort 
+  LDA ControllerPort   ;Player 1 up arrow
   AND #%00000001 
   BEQ ReadUpDone
  
 LoopA:
-  LDA SpriteYPos , x       ; load sprite X position
+  LDA SpriteYPos , x       ; load sprite Y position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
-  STA SpriteYPos , x       ; save sprite X position
+  STA SpriteYPos , x       ; save sprite Y position
   INX
   INX
   INX
@@ -131,15 +129,15 @@ LoopA:
 ReadUpDone: 
   
 ReadDown: 
-  LDA ControllerPort 
+  LDA ControllerPort ;Player 1 down arrow
   AND #%00000001 
   BEQ ReadDownDone
  
 LoopB:
-  LDA SpriteYPos , x       ; load sprite X position
+  LDA SpriteYPos , x       ; load sprite Y position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
-  STA SpriteYPos , x       ; save sprite X position
+  STA SpriteYPos , x       ; save sprite Y position
   INX
   INX
   INX
@@ -149,9 +147,9 @@ LoopB:
 ReadDownDone: 
   
 ReadLeft: 
-  LDA ControllerPort ; player 1 - B
+  LDA ControllerPort ; player 1 left arrow
   AND #%00000001  ; only look at bit 0
-  BEQ ReadLeftDone   ; branch to ReadBDone if button is NOT pressed (0)
+  BEQ ReadLeftDone   ; branch to ReadLeftDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
 LoopC:
   LDA SpriteXPos, x       ; load sprite X position
@@ -167,9 +165,9 @@ LoopC:
 ReadLeftDone:        ; handling this button is done
 
 ReadRight: 
-  LDA ControllerPort ; player 1 - A
+  LDA ControllerPort ; player 1 right arrow 
   AND #%00000001  ; only look at bit 0
-  BEQ ReadRightDone   ; branch to ReadADone if button is NOT pressed (0)
+  BEQ ReadRightDone   ; branch to ReadRightDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
  
 LoopD:
