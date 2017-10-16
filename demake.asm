@@ -67,12 +67,12 @@ LoadPalettesLoop:
 
 LoadSprites:
   LDX #$00              ; start at 0
-LoadSpritesLoop:
+.Loop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
   CPX #$10              ; Compare X to hex $20, decimal 32  ; TODO meant to be 20??
-  BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
+  BNE .Loop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
               
   
@@ -147,10 +147,10 @@ NMI:
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
 
   ; Varaibles?
-SpriteYPos = $0200
-SpriteXPos = $0203 
+SPRITEYPOSITION = $0200
+SPRITEXPOSITION = $0203 
 
-ControllerPort = $4016 
+CONTROLLERPORT = $4016 
   
 
 LatchController:
@@ -159,21 +159,21 @@ LatchController:
   LDA #$00
   STA $4016       ; tell both the controllers to latch buttons
 
-  LDA ControllerPort  ;A
-  LDA ControllerPort   ;B
-  LDA ControllerPort ;Select
-  LDA ControllerPort   ;Start  ;TODO change to loop
+  LDA CONTROLLERPORT  ;A
+  LDA CONTROLLERPORT   ;B
+  LDA CONTROLLERPORT ;Select
+  LDA CONTROLLERPORT   ;Start  ;TODO change to loop
   
 ReadUp: 
-  LDA ControllerPort   ;Player 1 up arrow
+  LDA CONTROLLERPORT   ;Player 1 up arrow
   AND #%00000001 
   BEQ .Done
  
 .Loop:
-  LDA SpriteYPos , x       ; load sprite Y position
+  LDA SPRITEYPOSITION , x       ; load sprite Y position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
-  STA SpriteYPos , x       ; save sprite Y position
+  STA SPRITEYPOSITION , x       ; save sprite Y position
   INX
   INX
   INX
@@ -183,15 +183,15 @@ ReadUp:
 .Done: 
   
 ReadDown: 
-  LDA ControllerPort ;Player 1 down arrow
+  LDA CONTROLLERPORT ;Player 1 down arrow
   AND #%00000001 
   BEQ .Done
  
 .Loop:
-  LDA SpriteYPos , x       ; load sprite Y position
+  LDA SPRITEYPOSITION , x       ; load sprite Y position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
-  STA SpriteYPos , x       ; save sprite Y position
+  STA SPRITEYPOSITION , x       ; save sprite Y position
   INX
   INX
   INX
@@ -201,15 +201,15 @@ ReadDown:
 .Done: 
   
 ReadLeft: 
-  LDA ControllerPort ; player 1 left arrow
+  LDA CONTROLLERPORT ; player 1 left arrow
   AND #%00000001  ; only look at bit 0
   BEQ .Done   ; branch to ReadLeftDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
 .Loop:
-  LDA SpriteXPos, x       ; load sprite X position
+  LDA SPRITEXPOSITION, x       ; load sprite X position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
-  STA SpriteXPos, x       ; save sprite X position
+  STA SPRITEXPOSITION, x       ; save sprite X position
   INX
   INX
   INX
@@ -219,16 +219,16 @@ ReadLeft:
 .Done:        ; handling this button is done
 
 ReadRight: 
-  LDA ControllerPort ; player 1 right arrow 
+  LDA CONTROLLERPORT ; player 1 right arrow 
   AND #%00000001  ; only look at bit 0
   BEQ .Done   ; branch to ReadRightDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
  
 .Loop:
-  LDA SpriteXPos , x       ; load sprite X position
+  LDA SPRITEXPOSITION , x       ; load sprite X position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
-  STA SpriteXPos, x       ; save sprite X position
+  STA SPRITEXPOSITION, x       ; save sprite X position
   INX
   INX
   INX
