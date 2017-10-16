@@ -167,9 +167,9 @@ LatchController:
 ReadUp: 
   LDA ControllerPort   ;Player 1 up arrow
   AND #%00000001 
-  BEQ ReadUpDone
+  BEQ .Done
  
-LoopA:
+.Loop:
   LDA SpriteYPos , x       ; load sprite Y position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
@@ -179,15 +179,15 @@ LoopA:
   INX
   INX
   CPX $10
-  BNE LoopA
-ReadUpDone: 
+  BNE .Loop
+.Done: 
   
 ReadDown: 
   LDA ControllerPort ;Player 1 down arrow
   AND #%00000001 
-  BEQ ReadDownDone
+  BEQ .Done
  
-LoopB:
+.Loop:
   LDA SpriteYPos , x       ; load sprite Y position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
@@ -197,15 +197,15 @@ LoopB:
   INX
   INX
   CPX $10
-  BNE LoopB
-ReadDownDone: 
+  BNE .Loop
+.Done: 
   
 ReadLeft: 
   LDA ControllerPort ; player 1 left arrow
   AND #%00000001  ; only look at bit 0
-  BEQ ReadLeftDone   ; branch to ReadLeftDone if button is NOT pressed (0)
+  BEQ .Done   ; branch to ReadLeftDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
-LoopC:
+.Loop:
   LDA SpriteXPos, x       ; load sprite X position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
@@ -215,16 +215,16 @@ LoopC:
   INX
   INX
   CPX $10
-  BNE LoopC
-ReadLeftDone:        ; handling this button is done
+  BNE .Loop
+.Done:        ; handling this button is done
 
 ReadRight: 
   LDA ControllerPort ; player 1 right arrow 
   AND #%00000001  ; only look at bit 0
-  BEQ ReadRightDone   ; branch to ReadRightDone if button is NOT pressed (0)
+  BEQ .Done   ; branch to ReadRightDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
  
-LoopD:
+.Loop:
   LDA SpriteXPos , x       ; load sprite X position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
@@ -234,8 +234,8 @@ LoopD:
   INX
   INX
   CPX $10
-  BNE LoopD
-ReadRightDone:        ; handling this button is done
+  BNE .Loop
+.Done:        ; handling this button is done
 
 
 
