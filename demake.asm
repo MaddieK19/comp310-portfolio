@@ -7,7 +7,7 @@
 ;;;;;;;;;;;;;;;
 ;; VARIABLES
   .rsset $0000  ;;start variables at ram location 0
-buttons1   .rs 1  ; player 1 gamepad buttons, one bit per button
+buttons1   .rs 1  ; player 1 controller buttons, one bit per button
 
 CONTROLLER_A      = %10000000
 CONTROLLER_B      = %01000000
@@ -18,8 +18,13 @@ CONTROLLER_DOWN   = %00000100
 CONTROLLER_LEFT   = %00000010
 CONTROLLER_RIGHT  = %00000001
 
-SPRITEYPOSITION = $0200
-SPRITEXPOSITION = $0203 
+CHARACTERYATTRIBUTE = $0200  ; Character sprite X position
+CHARACTERXATTRIBUTE = $0203  ; Character sprite Y position
+
+RIGHTWALL      = $F4
+TOPWALL        = $20
+BOTTOMWALL     = $E0
+LEFTWALL       = $04
     
   .bank 0
   .org $C000 
@@ -168,10 +173,10 @@ ReadUp:
   BEQ .Done
  
 .Loop:
-  LDA SPRITEYPOSITION , x       ; load sprite Y position
+  LDA CHARACTERYATTRIBUTE , x       ; load sprite Y position
   SEC                           ; make sure carry flag is set
   SBC #$01        			    ; A = A - 1
-  STA SPRITEYPOSITION , x       ; save sprite Y position
+  STA CHARACTERYATTRIBUTE , x       ; save sprite Y position
   INX
   INX
   INX
@@ -186,10 +191,10 @@ ReadDown:
   BEQ .Done
  
 .Loop:
-  LDA SPRITEYPOSITION , x       ; load sprite Y position
+  LDA CHARACTERYATTRIBUTE , x       ; load sprite Y position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
-  STA SPRITEYPOSITION , x       ; save sprite Y position
+  STA CHARACTERYATTRIBUTE , x       ; save sprite Y position
   INX
   INX
   INX
@@ -202,12 +207,12 @@ ReadLeft:
   LDA buttons1 ; player 1 left arrow
   AND #CONTROLLER_LEFT  ; only look at bit 0
   BEQ .Done   ; branch to ReadLeftDone if button is NOT pressed (0)
-                  ; add instructions here to do something when button IS pressed (1)
+  
 .Loop:
-  LDA SPRITEXPOSITION, x       ; load sprite X position
+  LDA CHARACTERXATTRIBUTE, x       ; load sprite X position
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
-  STA SPRITEXPOSITION, x       ; save sprite X position
+  STA CHARACTERXATTRIBUTE, x       ; save sprite X position
   INX
   INX
   INX
@@ -223,10 +228,10 @@ ReadRight:
                   ; add instructions here to do something when button IS pressed (1)
  
 .Loop:
-  LDA SPRITEXPOSITION , x       ; load sprite X position
+  LDA CHARACTERXATTRIBUTE , x       ; load sprite X position
   CLC             ; make sure carry flag is set
   ADC #$01        ; A = A - 1
-  STA SPRITEXPOSITION, x       ; save sprite X position
+  STA CHARACTERXATTRIBUTE, x       ; save sprite X position
   INX
   INX
   INX
