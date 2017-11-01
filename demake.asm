@@ -5,7 +5,21 @@
   
 
 ;;;;;;;;;;;;;;;
+;; VARIABLES
+  .rsset $0000  ;;start variables at ram location 0
+buttons1   .rs 1  ; player 1 gamepad buttons, one bit per button
 
+CONTROLLER_A      = %10000000
+CONTROLLER_B      = %01000000
+CONTROLLER_SELECT = %00100000
+CONTROLLER_START  = %00010000
+CONTROLLER_UP     = %00001000
+CONTROLLER_DOWN   = %00000100
+CONTROLLER_LEFT   = %00000010
+CONTROLLER_RIGHT  = %00000001
+
+SPRITEYPOSITION = $0200
+SPRITEXPOSITION = $0203 
     
   .bank 0
   .org $C000 
@@ -146,33 +160,17 @@ NMI:
   LDA #$02
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
 
-  ; Varaibles?
-SPRITEYPOSITION = $0200
-SPRITEXPOSITION = $0203 
+  JSR ReadController1 
 
-CONTROLLERPORT = $4016 
-  
-
-LatchController:
-  LDA #$01
-  STA $4016
-  LDA #$00
-  STA $4016       ; tell both the controllers to latch buttons
-
-  LDA CONTROLLERPORT  ;A
-  LDA CONTROLLERPORT   ;B
-  LDA CONTROLLERPORT ;Select
-  LDA CONTROLLERPORT   ;Start  ;TODO change to loop
-  
 ReadUp: 
-  LDA CONTROLLERPORT   ;Player 1 up arrow
-  AND #%00000001 
+  LDA buttons1   ;Player 1 up arrow
+  AND #CONTROLLER_UP 
   BEQ .Done
  
 .Loop:
   LDA SPRITEYPOSITION , x       ; load sprite Y position
-  SEC             ; make sure carry flag is set
-  SBC #$01        ; A = A - 1
+  SEC                           ; make sure carry flag is set
+  SBC #$01        			    ; A = A - 1
   STA SPRITEYPOSITION , x       ; save sprite Y position
   INX
   INX
@@ -180,11 +178,11 @@ ReadUp:
   INX
   CPX $10
   BNE .Loop
-.Done: 
+.Done:  
   
 ReadDown: 
-  LDA CONTROLLERPORT ;Player 1 down arrow
-  AND #%00000001 
+  LDA buttons1 ;Player 1 down arrow
+  AND #CONTROLLER_DOWN 
   BEQ .Done
  
 .Loop:
@@ -201,8 +199,8 @@ ReadDown:
 .Done: 
   
 ReadLeft: 
-  LDA CONTROLLERPORT ; player 1 left arrow
-  AND #%00000001  ; only look at bit 0
+  LDA buttons1 ; player 1 left arrow
+  AND #CONTROLLER_LEFT  ; only look at bit 0
   BEQ .Done   ; branch to ReadLeftDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
 .Loop:
@@ -219,8 +217,8 @@ ReadLeft:
 .Done:        ; handling this button is done
 
 ReadRight: 
-  LDA CONTROLLERPORT ; player 1 right arrow 
-  AND #%00000001  ; only look at bit 0
+  LDA buttons1 ; player 1 right arrow 
+  AND #CONTROLLER_RIGHT  ; only look at bit 0
   BEQ .Done   ; branch to ReadRightDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
  
@@ -249,6 +247,20 @@ ReadRight:
   STA $2005
 
   RTI             ; return from interrupt
+  
+ReadController1:
+  LDA #$01
+  STA $4016
+  LDA #$00
+  STA $4016
+  LDX #$08
+ReadController1Loop:
+  LDA $4016
+  LSR A            ; bit0 -> Carry
+  ROL buttons1     ; bit0 <- Carry
+  DEX
+  BNE ReadController1Loop
+  RTS
  
 ;;;;;;;;;;;;;;  
   
