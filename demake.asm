@@ -8,6 +8,8 @@
 ;; VARIABLES
   .rsset $0000  ;;start variables at ram location 0
 buttons1   .rs 1  ; player 1 controller buttons, one bit per button
+playerX	   .rs 1
+playerY	   .rs 1
 
 CONTROLLER_A      = %10000000
 CONTROLLER_B      = %01000000
@@ -155,6 +157,12 @@ LoadAttributeLoop:
 
   LDA #%00010000   ; enable sprites
   STA $2001
+  
+  LDA #$50
+  STA playerY
+  
+  LDA #$80
+  STA playerX
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
@@ -171,6 +179,9 @@ ReadUp:
   LDA buttons1   ;Player 1 up arrow
   AND #CONTROLLER_UP 
   BEQ .Done
+  LDA CHARACTERYATTRIBUTE
+  CMP #TOPWALL
+  BCC .Done
  
 .Loop:
   LDA CHARACTERYATTRIBUTE , x       ; load sprite Y position
@@ -189,6 +200,9 @@ ReadDown:
   LDA buttons1 ;Player 1 down arrow
   AND #CONTROLLER_DOWN 
   BEQ .Done
+  LDA CHARACTERYATTRIBUTE
+  CMP #BOTTOMWALL
+  BCS .Done
  
 .Loop:
   LDA CHARACTERYATTRIBUTE , x       ; load sprite Y position
@@ -207,6 +221,9 @@ ReadLeft:
   LDA buttons1 ; player 1 left arrow
   AND #CONTROLLER_LEFT  ; only look at bit 0
   BEQ .Done   ; branch to ReadLeftDone if button is NOT pressed (0)
+  LDA CHARACTERXATTRIBUTE
+  CMP #LEFTWALL
+  BCC .Done
   
 .Loop:
   LDA CHARACTERXATTRIBUTE, x       ; load sprite X position
@@ -225,8 +242,10 @@ ReadRight:
   LDA buttons1 ; player 1 right arrow 
   AND #CONTROLLER_RIGHT  ; only look at bit 0
   BEQ .Done   ; branch to ReadRightDone if button is NOT pressed (0)
-                  ; add instructions here to do something when button IS pressed (1)
- 
+  LDA CHARACTERXATTRIBUTE
+  CMP #RIGHTWALL
+  BCS .Done
+  
 .Loop:
   LDA CHARACTERXATTRIBUTE , x       ; load sprite X position
   CLC             ; make sure carry flag is set
@@ -252,7 +271,7 @@ ReadRight:
   STA $2005
 
   RTI             ; return from interrupt
-  
+    
 ReadController1:
   LDA #$01
   STA $4016
