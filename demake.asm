@@ -10,6 +10,9 @@
 buttons1   .rs 1  ; player 1 controller buttons, one bit per button
 playerX	   .rs 1
 playerY	   .rs 1
+tempPlayerX	   .rs 1
+tempPlayerY	   .rs 1
+isJumping  .rs 1
 
 CONTROLLER_A      = %10000000
 CONTROLLER_B      = %01000000
@@ -152,6 +155,11 @@ LoadAttributeLoop:
   BNE LoadAttributeLoop  ; Branch to LoadAttributeLoop if compare was Not Equal to zero
                         ; if compare was equal to 128, keep going down  
 
+LoadIntialCharacterCoord:
+  LDA $04
+  STA playerX
+  STA playerY
+
   LDA #%10000000   ; enable NMI, sprites from Pattern Table 1
   STA $2000
 
@@ -178,97 +186,97 @@ NMI:
 ReadUp: 
   LDA buttons1   ;Player 1 up arrow
   AND #CONTROLLER_UP 
-  BEQ .Done
-  LDA CHARACTERYATTRIBUTE
+  BEQ .Done  
+  LDA CHARACTERYATTRIBUTE 
   CMP #TOPWALL
   BCC .Done
- 
-.Loop:
-  LDA CHARACTERYATTRIBUTE , x       ; load sprite Y position
+  LDA playerY
   SEC                           ; make sure carry flag is set
   SBC #$01        			    ; A = A - 1
-  STA CHARACTERYATTRIBUTE , x       ; save sprite Y position
-  INX
-  INX
-  INX
-  INX
-  CPX $10
-  BNE .Loop
+  STA playerY
 .Done:  
   
 ReadDown: 
-  LDA buttons1 ;Player 1 down arrow
+  LDA buttons1					;Player 1 down arrow
   AND #CONTROLLER_DOWN 
   BEQ .Done
   LDA CHARACTERYATTRIBUTE
   CMP #BOTTOMWALL
   BCS .Done
- 
-.Loop:
-  LDA CHARACTERYATTRIBUTE , x       ; load sprite Y position
-  CLC             ; make sure carry flag is set
-  ADC #$01        ; A = A - 1
-  STA CHARACTERYATTRIBUTE , x       ; save sprite Y position
-  INX
-  INX
-  INX
-  INX
-  CPX $10
-  BNE .Loop
+  LDA playerY
+  CLC							; make sure carry flag is set
+  ADC #$01						; A = A - 1
+  STA playerY
 .Done: 
   
 ReadLeft: 
-  LDA buttons1 ; player 1 left arrow
-  AND #CONTROLLER_LEFT  ; only look at bit 0
-  BEQ .Done   ; branch to ReadLeftDone if button is NOT pressed (0)
+  LDA buttons1					; player 1 left arrow
+  AND #CONTROLLER_LEFT			; only look at bit 0
+  BEQ .Done						; branch to ReadLeftDone if button is NOT pressed (0)
   LDA CHARACTERXATTRIBUTE
   CMP #LEFTWALL
   BCC .Done
-  
-.Loop:
-  LDA CHARACTERXATTRIBUTE, x       ; load sprite X position
-  SEC             ; make sure carry flag is set
-  SBC #$01        ; A = A - 1
-  STA CHARACTERXATTRIBUTE, x       ; save sprite X position
-  INX
-  INX
-  INX
-  INX
-  CPX $10
-  BNE .Loop
-.Done:        ; handling this button is done
+  LDA playerX					; load sprite X position
+  SEC							; make sure carry flag is set
+  SBC #$01						; A = A - 1
+  STA playerX
+.Done:							;  handling this button is done
 
 ReadRight: 
   LDA buttons1 ; player 1 right arrow 
   AND #CONTROLLER_RIGHT  ; only look at bit 0
-  BEQ .Done   ; branch to ReadRightDone if button is NOT pressed (0)
+  BEQ .Done		    ; branch to ReadRightDone if button is NOT pressed (0)
   LDA CHARACTERXATTRIBUTE
   CMP #RIGHTWALL
   BCS .Done
-  
-.Loop:
-  LDA CHARACTERXATTRIBUTE , x       ; load sprite X position
-  CLC             ; make sure carry flag is set
-  ADC #$01        ; A = A - 1
-  STA CHARACTERXATTRIBUTE, x       ; save sprite X position
-  INX
-  INX
-  INX
-  INX
-  CPX $10
-  BNE .Loop
-.Done:        ; handling this button is done
+  LDA playerX					 ; load sprite X position
+  CLC							 ; make sure carry flag is set
+  ADC #$01						 ; A = A - 1
+  STA playerX					 ; save sprite X position
 
+.Done:							 ; handling this button is done
 
+UpdateCharacterSprites				; Updates Charater's sprites position
+ LDA								; Loads playerX
+ STA tempPlayerY					; Saves playerX value in tempPlayerX
+ LDA playerX						; Loads playerX
+ STA tempPlayerX					; Saves playerY value in tempPlayerY
+
+YLoop:
+  LDA tempPlayerY
+  STA CHARACTERYATTRIBUTE, x       ; save sprite y position
+  CLC							   ; make sure carry flag is set
+  ADC #$04						   ; A = A - 1
+  STA tempPlayerY
+  INX
+  INX
+  INX
+  INX
+  CPX #$10
+  BNE YLoop
+
+XLoop:
+  LDA tempPlayerX					; load sprite X position
+  STA CHARACTERXATTRIBUTE, x        ; save sprite X position
+  CLC							    ; make sure carry flag is set
+  ADC #$04  
+  STA tempPlayerX
+  INX
+  INX
+  INX
+  INX
+  CPX #$10
+  BNE XLoop
 
   ;;This is the PPU clean up section, so rendering the next frame starts properly.
   LDA #%10010000   ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
   STA $2000
   LDA #%00011110   ; enable sprites, enable background, no clipping on left side
   STA $2001
-  LDA #$00        ;;tell the ppu there is no background scrolling
+  LDA #$00         ;tell the ppu there is no background scrolling
   STA $2005
   STA $2005
+
 
   RTI             ; return from interrupt
     
