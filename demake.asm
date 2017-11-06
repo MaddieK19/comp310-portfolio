@@ -29,7 +29,7 @@ CHARACTERXATTRIBUTE = $0203  ; Character sprite Y position
 RIGHTWALL      = $F4
 TOPWALL        = $20
 BOTTOMWALL     = $E0
-LEFTWALL       = $04
+LEFTWALL       = $03
     
   .bank 0
   .org $C000 
@@ -95,7 +95,7 @@ LoadSprites:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$10              ; Compare X to hex $20, decimal 32  ; TODO meant to be 20??
+  CPX #$20              ; Compare X to hex $20, decimal 32  ; TODO meant to be 20??
   BNE .Loop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
               
@@ -237,36 +237,27 @@ ReadRight:
 .Done:							 ; handling this button is done
 
 UpdateCharacterSprites				; Updates Charater's sprites position
- LDA								; Loads playerX
+ LDA playerY						; Loads playerX
  STA tempPlayerY					; Saves playerX value in tempPlayerX
- LDA playerX						; Loads playerX
- STA tempPlayerX					; Saves playerY value in tempPlayerY
+ LDA playerX						; Loads playerY
+ STA tempPlayerX					
+ 
+ LDA tempPlayerY  					; Loads tempPlayerY
+ STA $0200							; Save to top left sprite
+ STA $0204							; Save  to top right sprite
+ CLC								; Clear carry
+ ADC #$08							; Add 8 to tempPlayerY
+ STA $0208							; Save to bottom left sprite
+ STA $020C							; Save to bottom right sprite
+ 
+ LDA tempPlayerX					; Loads tempPlayerX
+ STA $0203
+ STA $020B
+ CLC
+ ADC #$08
+ STA $0207
+ STA $020F
 
-YLoop:
-  LDA tempPlayerY
-  STA CHARACTERYATTRIBUTE, x       ; save sprite y position
-  CLC							   ; make sure carry flag is set
-  ADC #$04						   ; A = A - 1
-  STA tempPlayerY
-  INX
-  INX
-  INX
-  INX
-  CPX #$10
-  BNE YLoop
-
-XLoop:
-  LDA tempPlayerX					; load sprite X position
-  STA CHARACTERXATTRIBUTE, x        ; save sprite X position
-  CLC							    ; make sure carry flag is set
-  ADC #$04  
-  STA tempPlayerX
-  INX
-  INX
-  INX
-  INX
-  CPX #$10
-  BNE XLoop
 
   ;;This is the PPU clean up section, so rendering the next frame starts properly.
   LDA #%10010000   ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
