@@ -32,7 +32,7 @@ TOPWALL        = $20
 BOTTOMWALL     = $D4
 LEFTWALL       = $03
 
-MAX_GRAVITY    = $02	; The maximum speed at which an object can fall
+MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
 JUMP_HEIGHT	   = $08
     
   .bank 0
