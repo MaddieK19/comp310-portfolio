@@ -13,7 +13,7 @@ playerY				.rs 1  ; Character sprite Y position
 tempPlayerX			.rs 1  ; Temporary X position for use in sprite positioning
 tempPlayerY			.rs 1  ; Temporary Y position for use in sprite positioning
 gravity				.rs 1  ; Value for gravity
-jumpHeight			.rs 1  ; Value for jump height 
+jumpAmount			.rs 1  ; Value for jump height 
 
 CONTROLLER_A      = %10000000
 CONTROLLER_B      = %01000000
@@ -33,6 +33,7 @@ BOTTOMWALL     = $D4
 LEFTWALL       = $03
 
 MAX_GRAVITY    = $02	; The maximum speed at which an object can fall
+JUMP_HEIGHT	   = $08
     
   .bank 0
   .org $C000 
@@ -167,7 +168,7 @@ SetIntialValues:
   STA gravity
   
   LDA #$00
-  STA jumpHeight
+  STA jumpAmount
 
   LDA #%10000000   ; enable NMI, sprites from Pattern Table 1
   STA $2000
@@ -215,18 +216,18 @@ ReadRight:
 
 ReadA:  ; TODO only allow double jump / cant jump off screen
   LDA #$0
-  STA jumpHeight
+  STA jumpAmount
   LDA buttons1   ;Player 1 A button
   AND #CONTROLLER_A 
   BEQ .Done  
-  LDA #$10
-  STA jumpHeight
+  LDA #JUMP_HEIGHT
+  STA jumpAmount
 .Done: 						    ; handling this button is done
 
 UpdateGravity:
   LDA playerY
   SEC							; make sure carry flag is set
-  SBC jumpHeight
+  SBC jumpAmount
   STA playerY 
   
   LDA playerY					; Load playerY
