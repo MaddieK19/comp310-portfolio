@@ -28,12 +28,12 @@ CHARACTERYATTRIBUTE = $0200  ; Character sprite X position
 CHARACTERXATTRIBUTE = $0203  ; Character sprite Y position
 
 RIGHTWALL      = $F4
-TOPWALL        = $20
+TOPWALL        = $10
 BOTTOMWALL     = $D4
 LEFTWALL       = $03
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
-JUMP_HEIGHT	   = $08
+JUMP_HEIGHT	   = $08	; The height of the character's jump
     
   .bank 0
   .org $C000 
@@ -100,7 +100,7 @@ LoadSprites:
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
   CPX #$20              ; Compare X to hex $20, decimal 32  ; TODO meant to be 20??
-  BNE .Loop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
+  BNE .Loop   			; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
               
   
@@ -112,36 +112,36 @@ LoadBackground:
   STA $2006             ; write the low byte of $2000 address
   LDX #$00              ; start out at 0
 LoadBackgroundLoop:
-  LDA backgroundPart1, x     ; load data from address (background + the value in x)
-  STA $2007             ; write to PPU
-  INX                   ; X = X + 1
-  CPX #$00              ; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop  ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
-                        ; if compare was equal to 128, keep going down
-; Loads second section of bg						
-LoadBackgroundLoop2:
-  LDA backgroundPart2, x     ; load data from address (background + the value in x)
-  STA $2007             ; write to PPU
-  INX                   ; X = X + 1
-  CPX #$00              ; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop2  ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
-                        ; if compare was equal to 128, keep going down
+  LDA backgroundPart1, x    ; load data from address (background + the value in x)
+  STA $2007             	; write to PPU
+  INX                   	; X = X + 1
+  CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
+  BNE LoadBackgroundLoop  	; Branch to LoadBackgroundLoop if compare was Not Equal to zero
+							; if compare was equal to 128, keep going down
+					
+LoadBackgroundLoop2:		; Loads second section of bg	
+  LDA backgroundPart2, x    ; load data from address (background + the value in x)
+  STA $2007             	; write to PPU
+  INX                   	; X = X + 1
+  CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
+  BNE LoadBackgroundLoop2   ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
+							; if compare was equal to 128, keep going down
 						
 LoadBackgroundLoop3:
-  LDA backgroundPart3, x     ; load data from address (background + the value in x)
-  STA $2007             ; write to PPU
-  INX                   ; X = X + 1
-  CPX #$00              ; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop3  ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
-                        ; if compare was equal to 128, keep going down
+  LDA backgroundPart3, x    ; load data from address (background + the value in x)
+  STA $2007             	; write to PPU
+  INX                   	; X = X + 1
+  CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
+  BNE LoadBackgroundLoop3  	; Branch to LoadBackgroundLoop if compare was Not Equal to zero
+							; if compare was equal to 128, keep going down
 						
 												
 LoadBackgroundLoop4:
-  LDA backgroundPart4, x     ; load data from address (background + the value in x)
-  STA $2007             ; write to PPU
-  INX                   ; X = X + 1
-  CPX #$00              ; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop4  ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
+  LDA backgroundPart4, x    ; load data from address (background + the value in x)
+  STA $2007             	; write to PPU
+  INX                   	; X = X + 1
+  CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
+  BNE LoadBackgroundLoop4   ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
      
               
 LoadAttribute:
@@ -156,7 +156,7 @@ LoadAttributeLoop:
   STA $2007             ; write to PPU
   INX                   ; X = X + 1
   CPX #$00              ; Compare X to hex $08, decimal 8 - copying 8 bytes  ; WAS 08
-  BNE LoadAttributeLoop  ; Branch to LoadAttributeLoop if compare was Not Equal to zero
+  BNE LoadAttributeLoop ; Branch to LoadAttributeLoop if compare was Not Equal to zero
                         ; if compare was equal to 128, keep going down  
 
 SetIntialValues:
@@ -190,83 +190,88 @@ NMI:
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
   AND #CONTROLLER_LEFT			; only look at bit 0
-  BEQ .Done						; branch to ReadLeftDone if button is NOT pressed (0)
-  LDA CHARACTERXATTRIBUTE
-  CMP #LEFTWALL
-  BCC .Done
+  BEQ .Done						; branch to .Done if button is not pressed
+  LDA CHARACTERXATTRIBUTE		; Loads CHARACTERXATTRIBUTE
+  CMP #LEFTWALL					; Compare to LEFTWALL
+  BCC .Done						; Branch to Done
   LDA playerX					; load sprite X position
   SEC							; make sure carry flag is set
   SBC #$01						; A = A - 1
-  STA playerX
-.Done:							;  handling this button is done
+  STA playerX					; Save to playerX
+.Done:							; Handling this button is done
 
 ReadRight: 
-  LDA buttons1 ; player 1 right arrow 
-  AND #CONTROLLER_RIGHT  ; only look at bit 0
-  BEQ .Done		    ; branch to ReadRightDone if button is NOT pressed (0)
-  LDA CHARACTERXATTRIBUTE
-  CMP #RIGHTWALL
-  BCS .Done
-  LDA playerX					 ; load sprite X position
-  CLC							 ; make sure carry flag is set
-  ADC #$01						 ; A = A - 1
-  STA playerX					 ; save sprite X position
-
-.Done:							 ; handling this button is done
+  LDA buttons1 					; player 1 right arrow 
+  AND #CONTROLLER_RIGHT  		; only look at bit 0
+  BEQ .Done		    			; branch to .Done if button is not pressed
+  LDA CHARACTERXATTRIBUTE		; Load CHARACTERXATTRIBUTE
+  CMP #RIGHTWALL				; Compare to RIGHTWALL
+  BCS .Done						; Branch
+  LDA playerX					; load sprite X position
+  CLC							; make sure carry flag is set
+  ADC #$01						; A = A - 1
+  STA playerX					; save to playerX
+.Done:							; handling this button is done
 
 ReadA:  ; TODO only allow double jump / cant jump off screen
-  LDA #$0
-  STA jumpAmount
-  LDA buttons1   ;Player 1 A button
+  LDA #$0						; Loads 0 into A
+  STA jumpAmount				; Saves A to jumpAmount
+  LDA buttons1   				; Loads Player 1 A button
   AND #CONTROLLER_A 
-  BEQ .Done  
-  LDA #JUMP_HEIGHT
-  STA jumpAmount
+  BEQ .Done  					; Branch to Done if button not pressed
+  LDA #JUMP_HEIGHT				; Loads JUMP_HEIGHT
+  STA jumpAmount				; Save to jumpAmount
 .Done: 						    ; handling this button is done
 
 UpdateGravity:
-  LDA playerY
-  SEC							; make sure carry flag is set
-  SBC jumpAmount
-  STA playerY 
-  
   LDA playerY					; Load playerY
   CMP #BOTTOMWALL				; Compare to BOTTOMWALL
   BCS .Done						; Branch if playerY < BOTTOMWALL
   CLC							; Clear carry
   ADC gravity					; Adds the value of gravity to A
   STA playerY					; Saves to playerY
-  
+.Done
+
+IncreaseGravity: 
   LDA gravity 					; Loads gravity
   CMP #MAX_GRAVITY				; Compares to max gravity
   BEQ .Done						; Branch to done if gravity = MAX_GRAVITY
   CLC							; Clear carry
   ADC #$01						; Add 1 to gravity
   STA gravity  					; Save to gravity 
-.Done:  
+.Done: 
+
+UpdateJump:
+  LDA playerY					; Load playerY
+  CMP #TOPWALL					; Compare to TOPWALL
+  BCC .Done						; Branch is greater than
+  SEC							; make sure carry flag is set
+  SBC jumpAmount				; Subtract jumpAmount from A
+  STA playerY 					; Save to playerY
+.Done  
  
 
-UpdateCharacterSprites				; Updates Charater's sprites position
- LDA playerY						; Loads playerX
- STA tempPlayerY					; Saves playerX value in tempPlayerX
- LDA playerX						; Loads playerY
+UpdateCharacterSprites			; Updates Charater's sprites position
+ LDA playerY					; Loads playerX
+ STA tempPlayerY				; Saves playerX value in tempPlayerX
+ LDA playerX					; Loads playerY
  STA tempPlayerX					
  
- LDA tempPlayerY  					; Loads tempPlayerY
- STA $0200							; Save to top left sprite
- STA $0204							; Save  to top right sprite
- CLC								; Clear carry
- ADC #$08							; Add 8 to tempPlayerY
- STA $0208							; Save to bottom left sprite
- STA $020C							; Save to bottom right sprite
+ LDA tempPlayerY  				; Loads tempPlayerY
+ STA $0200						; Save to top left sprite
+ STA $0204						; Save  to top right sprite
+ CLC							; Clear carry
+ ADC #$08						; Add 8 to tempPlayerY
+ STA $0208						; Save to bottom left sprite
+ STA $020C						; Save to bottom right sprite
  
- LDA tempPlayerX					; Loads tempPlayerX
- STA $0203							; Save to top left sprite
- STA $020B							; Save to bottom left sprite
- CLC								; Clear carry
- ADC #$08							; Add 8 to tempPlayerX
- STA $0207							; Save to top right sprite
- STA $020F							; Save to bottom right sprite
+ LDA tempPlayerX				; Loads tempPlayerX
+ STA $0203						; Save to top left sprite
+ STA $020B						; Save to bottom left sprite
+ CLC							; Clear carry
+ ADC #$08						; Add 8 to tempPlayerX
+ STA $0207						; Save to top right sprite
+ STA $020F						; Save to bottom right sprite
 
 
   ;;This is the PPU clean up section, so rendering the next frame starts properly.
@@ -281,7 +286,7 @@ UpdateCharacterSprites				; Updates Charater's sprites position
 
   RTI             ; return from interrupt
     
-ReadController1:
+ReadController1: 		; Loads controller 1
   LDA #$01
   STA $4016
   LDA #$00
