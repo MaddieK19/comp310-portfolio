@@ -111,39 +111,21 @@ LoadBackground:
   LDA #$00
   STA $2006             ; write the low byte of $2000 address
   LDX #$00              ; start out at 0
-LoadBackgroundLoop:
-  LDA backgroundPart1, x    ; load data from address (background + the value in x)
+  
+LoadBackgroundLoop .macro
+.Loop\@:
+  LDA \1, x    ; load data from address (background + the value in x)
   STA $2007             	; write to PPU
   INX                   	; X = X + 1
   CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop  	; Branch to LoadBackgroundLoop if compare was Not Equal to zero
-							; if compare was equal to 128, keep going down
-					
-LoadBackgroundLoop2:		; Loads second section of bg	
-  LDA backgroundPart2, x    ; load data from address (background + the value in x)
-  STA $2007             	; write to PPU
-  INX                   	; X = X + 1
-  CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop2   ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
-							; if compare was equal to 128, keep going down
-						
-LoadBackgroundLoop3:
-  LDA backgroundPart3, x    ; load data from address (background + the value in x)
-  STA $2007             	; write to PPU
-  INX                   	; X = X + 1
-  CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop3  	; Branch to LoadBackgroundLoop if compare was Not Equal to zero
-							; if compare was equal to 128, keep going down
-						
-												
-LoadBackgroundLoop4:
-  LDA backgroundPart4, x    ; load data from address (background + the value in x)
-  STA $2007             	; write to PPU
-  INX                   	; X = X + 1
-  CPX #$00              	; Compare X to hex $80, decimal 128 - copying 128 bytes
-  BNE LoadBackgroundLoop4   ; Branch to LoadBackgroundLoop if compare was Not Equal to zero
-     
-              
+  BNE .Loop\@  	; Branch to LoadBackgroundLoop if compare was Not Equal to zero
+  .endm
+
+  LoadBackgroundLoop backgroundPart1     
+  LoadBackgroundLoop backgroundPart2  
+  LoadBackgroundLoop backgroundPart3
+  LoadBackgroundLoop backgroundPart3   
+  
 LoadAttribute:
   LDA $2002             ; read PPU status to reset the high/low latch
   LDA #$23
