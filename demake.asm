@@ -124,7 +124,7 @@ LoadBackgroundLoop .macro
   LoadBackgroundLoop backgroundPart1     
   LoadBackgroundLoop backgroundPart2  
   LoadBackgroundLoop backgroundPart3
-  LoadBackgroundLoop backgroundPart3   
+  LoadBackgroundLoop backgroundPart4  
   
 LoadAttribute:
   LDA $2002             ; read PPU status to reset the high/low latch
