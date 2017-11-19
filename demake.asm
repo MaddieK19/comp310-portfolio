@@ -15,6 +15,8 @@ tempPlayerY			.rs 1  ; Temporary Y position for use in sprite positioning
 gravity				.rs 1  ; Value for gravity
 jumpAmount			.rs 1  ; Value for jump height 
 isFalling			.rs 1  ; 0 for falling, 1 for not falling
+isGreaterThan		.rs 1  ;
+isLessThan			.rs 1  ;
 
 CONTROLLER_A      = %10000000
 CONTROLLER_B      = %01000000
@@ -32,6 +34,9 @@ RIGHTWALL      = $F4
 TOPWALL        = $10
 BOTTOMWALL     = $D4
 LEFTWALL       = $03
+
+; PLATFORM 1
+P1HEIGHT	   = $08
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
 JUMP_HEIGHT	   = $08	; The height of the character's jump
@@ -170,6 +175,34 @@ NMI:
   STA $4014       ; set the high byte (02) of the RAM address, start the transfer
 
   JSR ReadController1 
+  
+CheckGreaterThan .macro
+  LDA \1
+  CMP \2
+  BCC .Done\@
+  LDA #$01
+  STA isGreaterThan
+.Done\@
+  .endm
+  
+CheckLessThan .macro
+  LDA \1
+  CMP \2
+  BCS .Done\@
+  LDA #$01
+  STA isLessThan
+.Done\@
+  .endm
+  
+  CheckLessThan playerX, P1HEIGHT
+
+CheckIsFalling:  
+  STA isLessThan
+  CMP #$01
+  BEQ .Done
+  LDA #$01
+  STA isFalling
+.Done
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
@@ -209,8 +242,8 @@ ReadA:  ; TODO only allow double jump / cant jump off screen
 
 UpdateGravity:
   LDA isFalling					; Loads isFalling
-  CMP #$00
-  BEQ .Done
+  CMP #$01
+  BNE .Done
   LDA playerY					; Load playerY
   CMP #BOTTOMWALL				; Compare to BOTTOMWALL
   BCS .Done						; Branch if playerY < BOTTOMWALL
@@ -286,7 +319,7 @@ ReadController1Loop:
   DEX
   BNE ReadController1Loop
   RTS
- 
+  
 ;;;;;;;;;;;;;;  
   
   .bank 1
