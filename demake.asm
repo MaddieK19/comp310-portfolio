@@ -38,7 +38,9 @@ LEFTWALL       = $03
 
 ; Platform 1
 P1TOP		   = $20
-P1BOTTOM	   = $30
+P1BOTTOM	   = $4F
+P1RIGHT		   = $20
+P1LEFT		   = $4F
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
 JUMP_HEIGHT	   = $08	; The height of the character's jump
@@ -178,41 +180,33 @@ NMI:
 
   JSR ReadController1 
   
-CheckGreaterThan .macro
-  LDA \1
-  CMP \2
-  BCC .Done\@
+CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   LDA #$01
-  STA isGreaterThan
-.Done\@
-  .endm
-  
-CheckLessThan .macro
-  LDA \1
+  STA isFalling
+  LDA playerY
+  CMP \1
+  BCC .Done\@
   CMP \2
   BCS .Done\@
-  LDA #$01
-  STA isLessThan
+  LDA playerX
+  CMP \3
+  BCS .Done\@
+  CMP \4
+  BCC .Done\@
+  LDA #$00
+  STA isFalling
 .Done\@
   .endm
   
-  CheckLessThan playerX, P1TOP
+  CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT
 
 ;CheckP1Collision:
-;  LDA isLessThan
-;  CMP #$00
-;  BEQ .Done
+;  LDA playerY 
+;  CMP #P1TOP
+;  BCS .Done
 ;  LDA #$00
 ;  STA isFalling
-;.Done
-
-CheckP1Collision:
-  LDA playerY 
-  CMP #P1TOP
-  BCS .Done
-  LDA #$00
-  STA isFalling
-.Done  
+;.Done  
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
