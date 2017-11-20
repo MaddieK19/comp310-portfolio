@@ -30,13 +30,15 @@ CONTROLLER_RIGHT  = %00000001
 CHARACTERYATTRIBUTE = $0200  ; Character sprite X position
 CHARACTERXATTRIBUTE = $0203  ; Character sprite Y position
 
+; Level borders
 RIGHTWALL      = $F4
 TOPWALL        = $10
-BOTTOMWALL     = $D4
+BOTTOMWALL     = $C8
 LEFTWALL       = $03
 
-; PLATFORM 1
-P1HEIGHT	   = $08
+; Platform 1
+P1TOP		   = $20
+P1BOTTOM	   = $30
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
 JUMP_HEIGHT	   = $08	; The height of the character's jump
@@ -105,7 +107,7 @@ LoadSprites:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$20              ; Compare X to hex $20, decimal 32  ; TODO meant to be 20??
+  CPX #$10              ; Compare X to hex $20, decimal 32  ;
   BNE .Loop   			; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
               
@@ -194,15 +196,23 @@ CheckLessThan .macro
 .Done\@
   .endm
   
-  CheckLessThan playerX, P1HEIGHT
+  CheckLessThan playerX, P1TOP
 
-CheckIsFalling:  
-  STA isLessThan
-  CMP #$01
-  BEQ .Done
-  LDA #$01
+;CheckP1Collision:
+;  LDA isLessThan
+;  CMP #$00
+;  BEQ .Done
+;  LDA #$00
+;  STA isFalling
+;.Done
+
+CheckP1Collision:
+  LDA playerY 
+  CMP #P1TOP
+  BCS .Done
+  LDA #$00
   STA isFalling
-.Done
+.Done  
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
