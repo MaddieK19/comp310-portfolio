@@ -180,13 +180,15 @@ NMI:
 
   JSR ReadController1 
   
+ResetIsFalling:
+ LDA #$01			; Loads 01 into A
+ STA isFalling		; Resets isFalling to 01 
+  
 CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
-  LDA #$01
-  STA isFalling
-  LDA playerY
-  CMP \1
-  BCC .Done\@
-  CMP \2
+  LDA playerY		; Loads playerY
+  CMP \1			; Compares to arguement 1
+  BCC .Done\@		; Branch if more than 
+  CMP \2			; Compare to arguem
   BCS .Done\@
   LDA playerX
   CMP \3
@@ -198,15 +200,7 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
 .Done\@
   .endm
   
-  CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT
-
-;CheckP1Collision:
-;  LDA playerY 
-;  CMP #P1TOP
-;  BCS .Done
-;  LDA #$00
-;  STA isFalling
-;.Done  
+  CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT	; Checks whether 
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
