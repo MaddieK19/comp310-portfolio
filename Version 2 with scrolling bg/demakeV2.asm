@@ -16,6 +16,7 @@ columnHigh .rs 1  ; high byte of new column address
 sourceLow  .rs 1  ; source for column data
 sourceHigh .rs 1
 columnNumber .rs 1  ; which column of level data to draw
+isJumping 	 .rs 1
 
 buttons1			.rs 1  ; player 1 controller buttons, one bit per button
 playerX				.rs 1  ; Character sprite X position
@@ -52,8 +53,20 @@ P1BOTTOM	   = $4F
 P1RIGHT		   = $20
 P1LEFT		   = $3F
 
+; Platform 2
+P2TOP		   = $60
+P2BOTTOM	   = $7F
+P2RIGHT		   = $60
+P2LEFT		   = $7F
+
+; Platform 3
+P3TOP		   = $C0
+P3BOTTOM	   = $D0
+P3RIGHT		   = $C0
+P3LEFT		   = $D0
+
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
-JUMP_HEIGHT	   = $08	; The height of the character's jump
+JUMP_HEIGHT	   = $1B	; The height of the character's jump
 
  
 ;;;;;;;;;;;;
@@ -118,7 +131,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$21              ; Compare X to hex $20, decimal 16
+  CPX #$40            ; Compare X to hex $20, decimal 16
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 16, keep going down
               
@@ -200,6 +213,7 @@ SetIntialValues:
   
   LDA #$00
   STA jumpAmount
+  STA isJumping
   
   LDA #%10000000   ; enable NMI, sprites from Pattern Table 1
   STA $2000
@@ -283,6 +297,8 @@ ResetIsFalling:
   
 CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   LDA playerY		; Loads playerY
+  CLC
+  ADC #$08			; Adds 4 to use 
   CMP \1			; Compares to arguement 1
   BCC .Done\@		; Branch if more than 
   CMP \2			; Compare to arguem
@@ -294,10 +310,13 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   BCC .Done\@
   LDA #$00
   STA isFalling
+  STA isJumping
 .Done\@
   .endm
   
   CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT	; Checks whether 
+  CheckPlatformCollision #P2TOP, #P2BOTTOM, #P2LEFT, #P2RIGHT
+  CheckPlatformCollision #P3TOP, #P3BOTTOM, #P3LEFT, #P3RIGHT
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
@@ -331,6 +350,12 @@ ReadA:  ; TODO only allow double jump / cant jump off screen
   LDA buttons1   				; Loads Player 1 A button
   AND #CONTROLLER_A 
   BEQ .Done  					; Branch to Done if button not pressed
+  LDA isJumping
+  CMP #$02
+  BEQ .Done
+  CLC
+  ADC #$01
+  STA isJumping
   LDA #JUMP_HEIGHT				; Loads JUMP_HEIGHT
   STA jumpAmount				; Save to jumpAmount
 .Done: 						    ; handling this button is done
@@ -345,6 +370,14 @@ UpdateGravity:
   CLC							; Clear carry
   ADC gravity					; Adds the value of gravity to A
   STA playerY					; Saves to playerY
+.Done
+
+UpdateIsJumping:
+  LDA playerY					; Load playerY
+  CMP #BOTTOMWALL				; Compare to BOTTOMWALL
+  BCC .Done						; Branch if playerY < BOTTOMWALL
+  LDA #$00
+  STA isJumping
 .Done
 
 IncreaseGravity: 
@@ -537,7 +570,7 @@ DrawNewAttributesLoopDone:
   .bank 1
   .org $E000
 palette:
-  .db $0F,$3D,$27,$0F,  $0F,$05,$25,$30,  $22,$30,$21,$0F,  $22,$27,$17,$0F   ;;background palette
+  .db $21,$00,$20,$0F,  $0F,$05,$25,$30,  $22,$30,$21,$0F,  $22,$27,$17,$0F   ;;background palette
   .db $21,$20,$25,$0F,  $22,$02,$38,$3C,  $22,$1C,$15,$14,  $22,$02,$38,$3C   ;;sprite palette
 
 sprites:
@@ -546,10 +579,18 @@ sprites:
   .db $80, $01, $00, $88   ;sprite 1  right head
   .db $88, $10, $00, $80   ;sprite 2  left body
   .db $88, $11, $00, $88   ;sprite 3  right body 
-  .db P1TOP+8, $02, $00, P1RIGHT+8  ; level tile
-  .db P1BOTTOM+8, $02, $00, P1RIGHT+8   ; level tile
-  .db P1TOP+8, $02, $00, P1LEFT+8  ; level tile
-  .db P1BOTTOM+8, $02, $00, P1LEFT+8  ; level tile
+  .db P1TOP+8, $02, $00, P1RIGHT+8  	; level tile
+  .db P1TOP+8, $02, $00, P1RIGHT+16  	; level tile
+  .db P1TOP+8, $02, $00, P1RIGHT+24  	; level tile
+  .db P1TOP+8, $02, $00, P1RIGHT+30 	; level tile
+  .db P2TOP+8, $02, $00, P2RIGHT+8  	; P2 tile
+  .db P2TOP+8, $02, $00, P2RIGHT+16  	; level tile
+  .db P2TOP+8, $02, $00, P2RIGHT+24  	; level tile
+  .db P2TOP+8, $02, $00, P2RIGHT+30 	; level tile
+  .db P3TOP+8, $02, $00, P3RIGHT+8  	; P3 tile
+  .db P3TOP+8, $02, $00, P3RIGHT+16  	; level tile
+  .db P3TOP+8, $02, $00, P3RIGHT+24  	; level tile
+  .db P3TOP+8, $02, $00, P3RIGHT+30 	; level tile
 columnData:
   .incbin "bgtest.nam"
 
