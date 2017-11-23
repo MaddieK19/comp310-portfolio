@@ -10,6 +10,9 @@ The game can be re-assembled with [NESASM3](http://www.nespowerpak.com/nesasm/) 
 The game has been tested and runs on:
 * An NES
 * FCEUX
+* JNES
+* MESEN
+* VirtuaNES
 
 ## Resources used:
 #### Sprites:
