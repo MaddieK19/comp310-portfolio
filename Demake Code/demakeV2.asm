@@ -93,7 +93,7 @@ P4RIGHT		   = $C0
 P4LEFT		   = $D0
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
-JUMP_HEIGHT	   = $1B	; The height of the character's jump
+JUMP_HEIGHT	   = $09	; The height of the character's jump
 ;;;;;;;;;;;;
     
   .bank 0
@@ -343,6 +343,7 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT
   CheckPlatformCollision #P2TOP, #P2BOTTOM, #P2LEFT, #P2RIGHT
   CheckPlatformCollision #P3TOP, #P3BOTTOM, #P3LEFT, #P3RIGHT
+  CheckPlatformCollision #P4TOP, #P4BOTTOM, #P4LEFT, #P4RIGHT
   
      
 CheckCoinCollision .macro ; COINX COINY
