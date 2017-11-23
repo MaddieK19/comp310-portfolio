@@ -28,6 +28,7 @@ jumpAmount			.rs 1  ; Value for jump height
 isFalling			.rs 1  ; 0 for falling, 1 for not falling
 isGreaterThan		.rs 1  ;
 isLessThan			.rs 1  ;
+coinsCollected		.rs 1  ; how many coins collected
 
 CONTROLLER_A      = %10000000
 CONTROLLER_B      = %01000000
@@ -67,7 +68,7 @@ P3LEFT		   = $D0
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
 JUMP_HEIGHT	   = $1B	; The height of the character's jump
-
+COINS_TO_WIN   = $05
  
 ;;;;;;;;;;;;
     
@@ -214,6 +215,7 @@ SetIntialValues:
   LDA #$00
   STA jumpAmount
   STA isJumping
+  STA coinsCollected
   
   LDA #%10000000   ; enable NMI, sprites from Pattern Table 1
   STA $2000
@@ -571,7 +573,7 @@ DrawNewAttributesLoopDone:
   .org $E000
 palette:
   .db $21,$00,$20,$0F,  $0F,$05,$25,$30,  $22,$30,$21,$0F,  $22,$27,$17,$0F   ;;background palette
-  .db $21,$20,$25,$0F,  $22,$02,$38,$3C,  $22,$1C,$15,$14,  $22,$02,$38,$3C   ;;sprite palette
+  .db $21,$20,$25,$0F,  $22,$02,$38,$3C,  $22,$1C,$15,$14,  $0f,$10,$26,$05   ;;sprite palette
 
 sprites:
      ;vert tile attr horiz
@@ -579,18 +581,19 @@ sprites:
   .db $80, $01, $00, $88   ;sprite 1  right head
   .db $88, $10, $00, $80   ;sprite 2  left body
   .db $88, $11, $00, $88   ;sprite 3  right body 
-  .db P1TOP+8, $02, $00, P1RIGHT+8  	; level tile
-  .db P1TOP+8, $02, $00, P1RIGHT+16  	; level tile
-  .db P1TOP+8, $02, $00, P1RIGHT+24  	; level tile
-  .db P1TOP+8, $02, $00, P1RIGHT+30 	; level tile
-  .db P2TOP+8, $02, $00, P2RIGHT+8  	; P2 tile
-  .db P2TOP+8, $02, $00, P2RIGHT+16  	; level tile
-  .db P2TOP+8, $02, $00, P2RIGHT+24  	; level tile
-  .db P2TOP+8, $02, $00, P2RIGHT+30 	; level tile
-  .db P3TOP+8, $02, $00, P3RIGHT+8  	; P3 tile
-  .db P3TOP+8, $02, $00, P3RIGHT+16  	; level tile
-  .db P3TOP+8, $02, $00, P3RIGHT+24  	; level tile
-  .db P3TOP+8, $02, $00, P3RIGHT+30 	; level tile
+  .db $AA, $03, $01, $AA   ; Collectible 1
+  .db P1TOP+8, $02, $03, P1RIGHT+8  	; p1 tile
+  .db P1TOP+8, $02, $03, P1RIGHT+16  	; level tile
+  .db P1TOP+8, $02, $03, P1RIGHT+24  	; level tile
+  .db P1TOP+8, $02, $03, P1RIGHT+30 	; level tile
+  .db P2TOP+8, $02, $03, P2RIGHT+8  	; P2 tile
+  .db P2TOP+8, $02, $03, P2RIGHT+16  	; level tile
+  .db P2TOP+8, $02, $03, P2RIGHT+24  	; level tile
+  .db P2TOP+8, $02, $03, P2RIGHT+30 	; level tile
+  .db P3TOP+8, $02, $03, P3RIGHT+8  	; P3 tile
+  .db P3TOP+8, $02, $03, P3RIGHT+16  	; level tile
+  .db P3TOP+8, $02, $03, P3RIGHT+24  	; level tile
+  .db P3TOP+8, $02, $03, P3RIGHT+30 	; level tile
 columnData:
   .incbin "bgtest.nam"
 
