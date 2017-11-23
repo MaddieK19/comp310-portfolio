@@ -42,6 +42,10 @@ CONTROLLER_RIGHT  = %00000001
 CHARACTERYATTRIBUTE = $0200  ; Character sprite X position
 CHARACTERXATTRIBUTE = $0203  ; Character sprite Y position
 
+;COINS
+COINY = $0210
+COINX = $0213
+
 ; Level borders
 RIGHTWALL      = $F4
 TOPWALL        = $10
@@ -61,7 +65,7 @@ P2RIGHT		   = $60
 P2LEFT		   = $7F
 
 ; Platform 3
-P3TOP		   = $C0
+P3TOP		   = $B9
 P3BOTTOM	   = $D0
 P3RIGHT		   = $C0
 P3LEFT		   = $D0
@@ -319,6 +323,44 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT	; Checks whether 
   CheckPlatformCollision #P2TOP, #P2BOTTOM, #P2LEFT, #P2RIGHT
   CheckPlatformCollision #P3TOP, #P3BOTTOM, #P3LEFT, #P3RIGHT
+  
+    
+CheckCoinCollision .macro ;coin top, coin left
+ LDA COINY
+  LDA #$00
+  STA isFalling
+.Done\@
+  .endm
+  
+;  CheckCoinCollision COINX, COINY
+
+CheckCoinCollision .macro ; COINX COINY
+  LDA \1
+  SEC
+  SBC playerY 
+  CLC
+  ADC #4
+  BMI .Done\@ 
+  SEC
+  SBC #8
+  BPL .Done\@
+  
+  LDA \2
+  SEC
+  SBC playerX
+  CLC
+  ADC #4
+  BMI .Done\@  ; Branch if bulletX - enemyX + 4 < 0
+  SEC
+  SBC #8
+  BPL .Done\@  ; branch if bulletX - enemyX - 4 > 0
+  
+  LDA #$04
+  STA $0211
+ .CollisionDone\@:
+  .endm
+  
+  CheckCoinCollision COINX, COINY
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
@@ -581,7 +623,7 @@ sprites:
   .db $80, $01, $00, $88   ;sprite 1  right head
   .db $88, $10, $00, $80   ;sprite 2  left body
   .db $88, $11, $00, $88   ;sprite 3  right body 
-  .db $AA, $03, $01, $AA   ; Collectible 1
+  .db $AA, $03, $01, $AA   ; Collectible 1   0210
   .db P1TOP+8, $02, $03, P1RIGHT+8  	; p1 tile
   .db P1TOP+8, $02, $03, P1RIGHT+16  	; level tile
   .db P1TOP+8, $02, $03, P1RIGHT+24  	; level tile
@@ -592,8 +634,6 @@ sprites:
   .db P2TOP+8, $02, $03, P2RIGHT+30 	; level tile
   .db P3TOP+8, $02, $03, P3RIGHT+8  	; P3 tile
   .db P3TOP+8, $02, $03, P3RIGHT+16  	; level tile
-  .db P3TOP+8, $02, $03, P3RIGHT+24  	; level tile
-  .db P3TOP+8, $02, $03, P3RIGHT+30 	; level tile
 columnData:
   .incbin "bgtest.nam"
 
