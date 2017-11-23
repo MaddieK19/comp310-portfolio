@@ -43,8 +43,23 @@ CHARACTERYATTRIBUTE = $0200  ; Character sprite X position
 CHARACTERXATTRIBUTE = $0203  ; Character sprite Y position
 
 ;COINS
-COINY = $0210
-COINX = $0213
+COIN1Y = $0214
+COIN1SPRITE = $0215
+COIN1X = $0217
+
+COIN2Y = $0218
+COIN2SPRITE = $0219
+COIN2X = $021B
+
+BLANKSPRITE = $04
+
+; Scores
+SCOREPOSITION = $08
+SCORESPRITE = $0211
+SCORE0SPRITE = $20
+SCORE1SPRITE = $21
+SCORE2SPRITE = $22
+SCORE3SPRITE = $23
 
 ; Level borders
 RIGHTWALL      = $F4
@@ -52,28 +67,33 @@ TOPWALL        = $10
 BOTTOMWALL     = $C8
 LEFTWALL       = $03
 
+
 ; Platform 1
-P1TOP		   = $20
-P1BOTTOM	   = $4F
-P1RIGHT		   = $20
-P1LEFT		   = $3F
+P1TOP		   = $B9
+P1BOTTOM	   = $C0
+P1RIGHT		   = $C0
+P1LEFT		   = $D8
 
 ; Platform 2
-P2TOP		   = $60
-P2BOTTOM	   = $7F
-P2RIGHT		   = $60
-P2LEFT		   = $7F
+P2TOP		   = $B0
+P2BOTTOM	   = $BF
+P2RIGHT		   = $A0
+P2LEFT		   = $B8
 
 ; Platform 3
-P3TOP		   = $B9
-P3BOTTOM	   = $D0
-P3RIGHT		   = $C0
-P3LEFT		   = $D0
+P3TOP		   = $B8
+P3BOTTOM	   = $C7
+P3RIGHT		   = $40
+P3LEFT		   = $58
+
+; Platform 4
+P4TOP		   = $B9
+P4BOTTOM	   = $D0
+P4RIGHT		   = $C0
+P4LEFT		   = $D0
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
 JUMP_HEIGHT	   = $1B	; The height of the character's jump
-COINS_TO_WIN   = $05
- 
 ;;;;;;;;;;;;
     
   .bank 0
@@ -136,7 +156,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$40            ; Compare X to hex $20, decimal 16
+  CPX #$35            ; Compare X to hex $20, decimal 16
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 16, keep going down
               
@@ -305,9 +325,9 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   LDA playerY		; Loads playerY
   CLC
   ADC #$08			; Adds 4 to use 
-  CMP \1			; Compares to arguement 1
+  CMP \1			; Compares to argument 1
   BCC .Done\@		; Branch if more than 
-  CMP \2			; Compare to arguem
+  CMP \2			; Compare to argument 2
   BCS .Done\@
   LDA playerX
   CMP \3
@@ -315,52 +335,68 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   CMP \4
   BCC .Done\@
   LDA #$00
-  STA isFalling
-  STA isJumping
+  STA isFalling		; sets isFalling to 0
+  STA isJumping		; sets isJumping to 0
 .Done\@
   .endm
   
-  CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT	; Checks whether 
+  CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT
   CheckPlatformCollision #P2TOP, #P2BOTTOM, #P2LEFT, #P2RIGHT
   CheckPlatformCollision #P3TOP, #P3BOTTOM, #P3LEFT, #P3RIGHT
   
-    
-CheckCoinCollision .macro ;coin top, coin left
- LDA COINY
-  LDA #$00
-  STA isFalling
-.Done\@
-  .endm
-  
-;  CheckCoinCollision COINX, COINY
-
+     
 CheckCoinCollision .macro ; COINX COINY
   LDA \1
   SEC
   SBC playerY 
   CLC
-  ADC #4
+  ADC #$04
   BMI .Done\@ 
   SEC
-  SBC #8
+  SBC #$08
   BPL .Done\@
   
   LDA \2
   SEC
   SBC playerX
   CLC
-  ADC #4
-  BMI .Done\@  ; Branch if bulletX - enemyX + 4 < 0
+  ADC #$04
+  BMI .Done\@ 
   SEC
-  SBC #8
-  BPL .Done\@  ; branch if bulletX - enemyX - 4 > 0
+  SBC #$08
+  BPL .Done\@ 
   
-  LDA #$04
-  STA $0211
- .CollisionDone\@:
+  LDA #BLANKSPRITE
+  STA \3
+  
+  LDA coinsCollected
+  CLC
+  ADC #$01
+  STA coinsCollected  
+  
+  LDA coinsCollected
+  CMP #$00
+  BEQ .Done\@
+  CMP #$01
+  BNE .CheckScoreIsTwo\@
+  LDA #SCORE1SPRITE
+  STA SCORESPRITE
+.CheckScoreIsTwo\@
+  CMP #$06
+  BNE .CheckScoreIsThree\@
+  LDA #SCORE2SPRITE
+  STA SCORESPRITE
+.CheckScoreIsThree\@  
+  CMP #$09
+  BNE .Done\@
+  LDA #SCORE3SPRITE
+  STA SCORESPRITE
+
+.Done\@:
   .endm
   
-  CheckCoinCollision COINX, COINY
+  CheckCoinCollision COIN1Y, COIN1X, COIN1SPRITE
+  CheckCoinCollision COIN2Y, COIN2X, COIN2SPRITE
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
@@ -443,7 +479,7 @@ UpdateJump:
 .Done  
  
 
-UpdateCharacterSprites			; Updates Charater's sprites position
+UpdateSprites			; Updates Charater's sprites position
  LDA playerY					; Loads playerX
  STA tempPlayerY				; Saves playerX value in tempPlayerX
  LDA playerX					; Loads playerY
@@ -619,26 +655,27 @@ palette:
 
 sprites:
      ;vert tile attr horiz
-  .db $80, $00, $00, $80   ;sprite 0  left head
-  .db $80, $01, $00, $88   ;sprite 1  right head
-  .db $88, $10, $00, $80   ;sprite 2  left body
-  .db $88, $11, $00, $88   ;sprite 3  right body 
+  .db $80, $00, $00, $80   ;sprite 0  left head			$0200
+  .db $80, $01, $00, $88   ;sprite 1  right head		$0204
+  .db $88, $10, $00, $80   ;sprite 2  left body			$0208
+  .db $88, $11, $00, $88   ;sprite 3  right body 		$020C
+  .db SCOREPOSITION, SCORE0SPRITE, $02, SCOREPOSITION	; Score sprite	$0210
   .db $AA, $03, $01, $AA   ; Collectible 1   0210
-  .db P1TOP+8, $02, $03, P1RIGHT+8  	; p1 tile
+  .db $BB, $03, $01, $BB   ; Collectible 2   0210
+  .db P1TOP+8, $02, $03, P1RIGHT+8  	; p1 tile	
   .db P1TOP+8, $02, $03, P1RIGHT+16  	; level tile
-  .db P1TOP+8, $02, $03, P1RIGHT+24  	; level tile
-  .db P1TOP+8, $02, $03, P1RIGHT+30 	; level tile
   .db P2TOP+8, $02, $03, P2RIGHT+8  	; P2 tile
   .db P2TOP+8, $02, $03, P2RIGHT+16  	; level tile
-  .db P2TOP+8, $02, $03, P2RIGHT+24  	; level tile
-  .db P2TOP+8, $02, $03, P2RIGHT+30 	; level tile
   .db P3TOP+8, $02, $03, P3RIGHT+8  	; P3 tile
   .db P3TOP+8, $02, $03, P3RIGHT+16  	; level tile
+  .db P4TOP+8, $02, $03, P4RIGHT+8  	; P4 tile
+  .db P4TOP+8, $02, $03, P4RIGHT+16  	; level tile
+
 columnData:
   .incbin "bgtest.nam"
 
 attribData:
-  .incbin "bgtestat.atr"
+  .incbin "bgtest.atr"
 
   .org $FFFA     ;first of the three vectors starts here
   .dw NMI        ;when an NMI happens (once per frame if enabled) the 
