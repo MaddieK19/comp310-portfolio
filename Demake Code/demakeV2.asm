@@ -29,6 +29,9 @@ isFalling			.rs 1  ; 0 for falling, 1 for not falling
 isGreaterThan		.rs 1  ;
 isLessThan			.rs 1  ;
 coinsCollected		.rs 1  ; how many coins collected
+coin1Active			.rs 1 ; whether coin1 is active
+coin2Active			.rs 1 ; whether coin2 is active
+coin3Active			.rs 1 ; whether coin3 is active
 
 CONTROLLER_A      = %10000000
 CONTROLLER_B      = %01000000
@@ -264,6 +267,9 @@ SetIntialValues:
   LDA #$01
   STA gravity
   STA isFalling
+  STA coin1Active
+  STA coin2Active
+  STA coin3Active
   
   LDA #$00
   STA jumpAmount
@@ -379,8 +385,11 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   CheckPlatformCollision #P6TOP, #P6BOTTOM, #P6LEFT, #P6RIGHT
   CheckPlatformCollision #P7TOP, #P7BOTTOM, #P7LEFT, #P7RIGHT
   
-     
-CheckCoinCollision .macro ; COINX COINY
+      
+CheckCoinCollision .macro ; COINX COINY COINSPRITE coinActive
+  LDA \4
+  CMP #$00
+  BEQ .Done\@
   LDA \1			; Checks for collision between the player and coins
   SEC
   SBC playerY 
@@ -408,6 +417,8 @@ CheckCoinCollision .macro ; COINX COINY
   CLC
   ADC #$01				; Adds 1
   STA coinsCollected  	; Saves to coinsCollected
+  LDA #$00
+  STA \4
   
   ; Updates the score sprite depending on coins collected
   LDA coinsCollected
@@ -418,22 +429,21 @@ CheckCoinCollision .macro ; COINX COINY
   LDA #SCORE1SPRITE
   STA SCORESPRITE
 .CheckScoreIsTwo\@
-  CMP #$03
+  CMP #$02
   BNE .CheckScoreIsThree\@
   LDA #SCORE2SPRITE
   STA SCORESPRITE
 .CheckScoreIsThree\@  
-  CMP #$05
+  CMP #$03
   BNE .Done\@
   LDA #SCORE3SPRITE
   STA SCORESPRITE
-
 .Done\@:
   .endm
   ; Runs the macro on the coins
-  CheckCoinCollision COIN1Y, COIN1X, COIN1SPRITE
-  CheckCoinCollision COIN2Y, COIN2X, COIN2SPRITE
-  CheckCoinCollision COIN3Y, COIN3X, COIN3SPRITE
+  CheckCoinCollision COIN1Y, COIN1X, COIN1SPRITE, coin1Active
+  CheckCoinCollision COIN2Y, COIN2X, COIN2SPRITE, coin2Active
+  CheckCoinCollision COIN3Y, COIN3X, COIN3SPRITE, coin3Active
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
