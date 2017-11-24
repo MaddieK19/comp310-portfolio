@@ -698,7 +698,7 @@ DrawNewAttributesLoopDone:
   .org $E000
 palette:
   .db $21,$00,$20,$0F,  $0F,$05,$25,$30,  $22,$30,$21,$0F,  $22,$27,$17,$0F   ;;background palette
-  .db $21,$20,$25,$0F,  $22,$02,$38,$3C,  $22,$1C,$15,$14,  $0f,$10,$26,$05   ;;sprite palette
+  .db $21,$20,$25,$0F,  $22,$02,$38,$3C,  $22,$1C,$15,$14,  $0f,$10,$26,$05   ;;s	prite palette
 
 sprites:
      ;vert tile attr horiz
@@ -709,7 +709,7 @@ sprites:
   .db SCOREPOSITION, SCORE0SPRITE, $02, SCOREPOSITION	; Score sprite	$0210
   .db $9F, $03, $01, $AF   ; Collectible 1   0210
   .db $AF, $03, $01, $BF   ; Collectible 2   0214
-  .db $80, $03, $01, $88   ; Collectible 3   0218
+  .db $80, $03, $01, $8F   ; Collectible 3   0218
   .db P0TOP+8, $02, $03, P0RIGHT+8  	; p0 tile	
   .db P0TOP+8, $02, $03, P0RIGHT+16  	; level tile
   .db P1TOP+8, $02, $03, P1RIGHT+8  	; p1 tile	
