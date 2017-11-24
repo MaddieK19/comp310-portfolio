@@ -119,7 +119,7 @@ P6LEFT		   = $BF
 P7TOP		   = $B8
 P7BOTTOM	   = $BF
 P7RIGHT		   = $B8
-P7LEFT		   = $C8
+P7LEFT		   = $BF
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
 JUMP_HEIGHT	   = $12	; The height of the character's jump
@@ -257,7 +257,7 @@ InitializeAttributesDone:
   STA $2001
   
 SetIntialValues:
-  LDA #$80
+  LDA #$70
   STA playerX
   STA playerY
   
@@ -353,7 +353,7 @@ ResetIsFalling:
 CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   LDA playerY		; Loads playerY
   CLC
-  ADC #$08			; Adds 4 to use 
+  ADC #$04			; Adds 
   CMP \1			; Compares to argument 1
   BCC .Done\@		; Branch if more than 
   CMP \2			; Compare to argument 2
@@ -369,6 +369,7 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
 .Done\@
   .endm
   
+  ;; Checks the platforms for collisions
   CheckPlatformCollision #P0TOP, #P0BOTTOM, #P0LEFT, #P0RIGHT
   CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT
   CheckPlatformCollision #P2TOP, #P2BOTTOM, #P2LEFT, #P2RIGHT
@@ -380,7 +381,7 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
   
      
 CheckCoinCollision .macro ; COINX COINY
-  LDA \1
+  LDA \1			; Checks for collision between the player and coins
   SEC
   SBC playerY 
   CLC
@@ -400,14 +401,15 @@ CheckCoinCollision .macro ; COINX COINY
   SBC #$08
   BPL .Done\@ 
   
-  LDA #BLANKSPRITE
+  LDA #BLANKSPRITE		; Sets the Coin sprite to  blank after collision
   STA \3
   
-  LDA coinsCollected
+  LDA coinsCollected	;Loads coinsCollected
   CLC
-  ADC #$01
-  STA coinsCollected  
+  ADC #$01				; Adds 1
+  STA coinsCollected  	; Saves to coinsCollected
   
+  ; Updates the score sprite depending on coins collected
   LDA coinsCollected
   CMP #$00
   BEQ .Done\@
@@ -428,7 +430,7 @@ CheckCoinCollision .macro ; COINX COINY
 
 .Done\@:
   .endm
-  
+  ; Runs the macro on the coins
   CheckCoinCollision COIN1Y, COIN1X, COIN1SPRITE
   CheckCoinCollision COIN2Y, COIN2X, COIN2SPRITE
   CheckCoinCollision COIN3Y, COIN3X, COIN3SPRITE
@@ -554,7 +556,7 @@ ReadController1Loop:
   BNE ReadController1Loop
   RTS
  
-
+; Back to scrolling background update
 DrawNewColumn:
   LDA scroll       ; calculate new column address using scroll register
   LSR A
@@ -695,7 +697,7 @@ sprites:
   .db $88, $10, $00, $80   ;sprite 2  left body			$0208
   .db $88, $11, $00, $88   ;sprite 3  right body 		$020C
   .db SCOREPOSITION, SCORE0SPRITE, $02, SCOREPOSITION	; Score sprite	$0210
-  .db $9F, $03, $01, $A0   ; Collectible 1   0210
+  .db $9F, $03, $01, $AF   ; Collectible 1   0210
   .db $AF, $03, $01, $BF   ; Collectible 2   0214
   .db $80, $03, $01, $88   ; Collectible 3   0218
   .db P0TOP+8, $02, $03, P0RIGHT+8  	; p0 tile	
