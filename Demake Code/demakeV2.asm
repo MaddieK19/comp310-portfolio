@@ -51,6 +51,10 @@ COIN2Y = $0218
 COIN2SPRITE = $0219
 COIN2X = $021B
 
+COIN3Y = $021C
+COIN3SPRITE = $021D
+COIN3X = $021F
+
 BLANKSPRITE = $04
 
 ; Scores
@@ -68,32 +72,57 @@ BOTTOMWALL     = $C8
 LEFTWALL       = $03
 
 
+; Platform 0
+P0TOP		   = $A8
+P0BOTTOM	   = $AF
+P0RIGHT		   = $A8
+P0LEFT		   = $B8
+
 ; Platform 1
-P1TOP		   = $B9
-P1BOTTOM	   = $C0
-P1RIGHT		   = $C0
-P1LEFT		   = $D8
+P1TOP		   = $9F
+P1BOTTOM	   = $A8
+P1RIGHT		   = $9F
+P1LEFT		   = $AF
 
 ; Platform 2
-P2TOP		   = $B0
-P2BOTTOM	   = $BF
-P2RIGHT		   = $A0
-P2LEFT		   = $B8
+P2TOP		   = $98
+P2BOTTOM	   = $9F
+P2RIGHT		   = $98
+P2LEFT		   = $A8
+
 
 ; Platform 3
-P3TOP		   = $B8
-P3BOTTOM	   = $C7
-P3RIGHT		   = $40
-P3LEFT		   = $58
+P3TOP		   = $8F
+P3BOTTOM	   = $98
+P3RIGHT		   = $8F
+P3LEFT		   = $9F
 
 ; Platform 4
-P4TOP		   = $B9
-P4BOTTOM	   = $D0
-P4RIGHT		   = $C0
-P4LEFT		   = $D0
+P4TOP		   = $88
+P4BOTTOM	   = $8F
+P4RIGHT		   = $88
+P4LEFT		   = $98
+
+; Platform 5
+P5TOP		   = $80
+P5BOTTOM	   = $88
+P5RIGHT		   = $80
+P5LEFT		   = $90
+
+; Platform 6
+P6TOP		   = $AF
+P6BOTTOM	   = $B8
+P6RIGHT		   = $AF
+P6LEFT		   = $BF
+
+; Platform 7
+P7TOP		   = $B8
+P7BOTTOM	   = $BF
+P7RIGHT		   = $B8
+P7LEFT		   = $C8
 
 MAX_GRAVITY    = $03	; The maximum speed at which an object can fall
-JUMP_HEIGHT	   = $09	; The height of the character's jump
+JUMP_HEIGHT	   = $12	; The height of the character's jump
 ;;;;;;;;;;;;
     
   .bank 0
@@ -156,7 +185,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$35            ; Compare X to hex $20, decimal 16
+  CPX #$58           ; Compare X to hex $20, decimal 16
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 16, keep going down
               
@@ -340,10 +369,14 @@ CheckPlatformCollision .macro  ; Platform: top, bottom, left, right
 .Done\@
   .endm
   
+  CheckPlatformCollision #P0TOP, #P0BOTTOM, #P0LEFT, #P0RIGHT
   CheckPlatformCollision #P1TOP, #P1BOTTOM, #P1LEFT, #P1RIGHT
   CheckPlatformCollision #P2TOP, #P2BOTTOM, #P2LEFT, #P2RIGHT
   CheckPlatformCollision #P3TOP, #P3BOTTOM, #P3LEFT, #P3RIGHT
   CheckPlatformCollision #P4TOP, #P4BOTTOM, #P4LEFT, #P4RIGHT
+  CheckPlatformCollision #P5TOP, #P5BOTTOM, #P5LEFT, #P5RIGHT
+  CheckPlatformCollision #P6TOP, #P6BOTTOM, #P6LEFT, #P6RIGHT
+  CheckPlatformCollision #P7TOP, #P7BOTTOM, #P7LEFT, #P7RIGHT
   
      
 CheckCoinCollision .macro ; COINX COINY
@@ -383,12 +416,12 @@ CheckCoinCollision .macro ; COINX COINY
   LDA #SCORE1SPRITE
   STA SCORESPRITE
 .CheckScoreIsTwo\@
-  CMP #$06
+  CMP #$03
   BNE .CheckScoreIsThree\@
   LDA #SCORE2SPRITE
   STA SCORESPRITE
 .CheckScoreIsThree\@  
-  CMP #$09
+  CMP #$05
   BNE .Done\@
   LDA #SCORE3SPRITE
   STA SCORESPRITE
@@ -398,6 +431,7 @@ CheckCoinCollision .macro ; COINX COINY
   
   CheckCoinCollision COIN1Y, COIN1X, COIN1SPRITE
   CheckCoinCollision COIN2Y, COIN2X, COIN2SPRITE
+  CheckCoinCollision COIN3Y, COIN3X, COIN3SPRITE
 
 ReadLeft: 
   LDA buttons1					; player 1 left arrow
@@ -661,8 +695,11 @@ sprites:
   .db $88, $10, $00, $80   ;sprite 2  left body			$0208
   .db $88, $11, $00, $88   ;sprite 3  right body 		$020C
   .db SCOREPOSITION, SCORE0SPRITE, $02, SCOREPOSITION	; Score sprite	$0210
-  .db $AA, $03, $01, $AA   ; Collectible 1   0210
-  .db $BB, $03, $01, $BB   ; Collectible 2   0210
+  .db $9F, $03, $01, $A0   ; Collectible 1   0210
+  .db $AF, $03, $01, $BF   ; Collectible 2   0214
+  .db $80, $03, $01, $88   ; Collectible 3   0218
+  .db P0TOP+8, $02, $03, P0RIGHT+8  	; p0 tile	
+  .db P0TOP+8, $02, $03, P0RIGHT+16  	; level tile
   .db P1TOP+8, $02, $03, P1RIGHT+8  	; p1 tile	
   .db P1TOP+8, $02, $03, P1RIGHT+16  	; level tile
   .db P2TOP+8, $02, $03, P2RIGHT+8  	; P2 tile
@@ -671,6 +708,10 @@ sprites:
   .db P3TOP+8, $02, $03, P3RIGHT+16  	; level tile
   .db P4TOP+8, $02, $03, P4RIGHT+8  	; P4 tile
   .db P4TOP+8, $02, $03, P4RIGHT+16  	; level tile
+  .db P5TOP+8, $02, $03, P5RIGHT+8  	; P5 tile
+  .db P5TOP+8, $02, $03, P5RIGHT+16  	; level tile
+  .db P6TOP+8, $02, $03, P6RIGHT+8  	; P5 tile
+  .db P6TOP+8, $02, $03, P6RIGHT+16  	; level tile
 
 columnData:
   .incbin "bgtest.nam"
